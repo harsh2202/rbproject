@@ -1,0 +1,39 @@
+image:
+  registry: ruby44.azurecr.io
+  repository: busybox
+  tag: ruby
+  pullPolicy: IfNotPresent
+replicaCount: 1
+appName: ruby
+protocol: TCP
+containers:
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+# cluster:
+#   cert:
+#     issuer: letsencrypt-prod-kong
+# Secret mount location
+# secretsPath: /usr/local/tomcat/temp
+service:
+  name: ruby-svc
+  type: ClusterIP
+  port: 8080
+# ingress
+ingress:
+  name: ruby-ingress
+  enabled: true
+  tls:
+    enabled: false ## When set to true, either set "secretName" alone or set the properties "certificate" and "key" together.
+    ## When there is an existing secret with certificate and key already available on the cluster, then "secretName" can be set with the name of the existing secret.
+    ## Certificate and key should start with -----BEGIN CERTIFICATE----- or 
+    ## -----BEGIN RSA PRIVATE KEY----- respectively
+    #certificate: ""
+    #key: ""  
+# # kong
+# kong:
+#   admin:
+#     url: https://ingress-kong-kong-admin.ingress:8444
+

@@ -1,0 +1,78 @@
+name: RB_APP_INFRA
+
+# Controls when the action will run. Manual trigger
+on:
+  workflow_dispatch:
+    inputs:
+      terraform_action:
+        type: choice
+        description: Select terraform action
+        default: plan
+        options:
+        - apply
+        - plan
+  pull_request:
+    paths:
+      - 'env/tf_ruby/**'
+      - 'env/tf_ruby/**'
+
+jobs:
+  ruby-65:
+    environment:
+      name: rbapp
+
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 30
+    strategy:
+      max-parallel: 1
+      fail-fast: false
+      matrix:
+        module:
+          - 65-ruby
+
+    env:
+      ARM_CLIENT_ID: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+      ARM_CLIENT_SECRET: ${{ secrets.ARM_NON_PROD_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: xxxxxxxxxxxxxxxxxxxxxxxxxxx
+      ARM_TENANT_ID: xxxxxxxxxxxxxxxxxxxxxx
+      TF_PATH: ./env/tf_ruby/
+      VAR_PATH: ../../env/
+      BACKEND_CONFIG_RESOURCE_GROUP_NAME: terraform-resources
+      BACKEND_CONFIG_STORAGE_ACCOUNT_NAME: storacctterraform
+      BACKEND_CONFIG_CONTAINER_NAME: tfstate
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - uses: actions/checkout@v2
+
+      # Checkout terraform
+      - uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.5.5
+
+      - name: Login to Git 
+        run: |
+          git config --global url."https://x-access-token:${{secrets.TF_GITHUB_TOKEN}}@github.com/"
+
+      - name: Validate and check format of terraform
+        if: ${{ github.event_name == 'pull_request'}}
+        run: |
+          cd ${TF_PATH}${{ matrix.module }}
+          terraform init -backend=false
+          terraform validate
+
+      - name: Create terraform plan
+        id: plan
+        run: |
+          cd ${TF_PATH}${{ matrix.module }}
+          terraform init -backend-config="key=${{ matrix.module }}" -backend-config="resource_group_name=${BACKEND_CONFIG_RESOURCE_GROUP_NAME}" -backend-config="storage_account_name=${BACKEND_CONFIG_STORAGE_ACCOUNT_NAME}" -backend-config="container_name=${BACKEND_CONFIG_CONTAINER_NAME}"
+          terraform plan -var-file="${VAR_PATH}${{ matrix.module }}/${{ matrix.module }}.var.tfvars" -out plan
+
+      - name: Apply terraform plan
+        if: ${{ github.event_name != 'pull_request' && github.event.inputs.terraform_action == 'apply'}}
+        run: |
+          cd ${TF_PATH}${{ matrix.module }}
+          terraform init -backend-config="key=${{ matrix.module }}" -backend-config="resource_group_name=${BACKEND_CONFIG_RESOURCE_GROUP_NAME}" -backend-config="storage_account_name=${BACKEND_CONFIG_STORAGE_ACCOUNT_NAME}" -backend-config="container_name=${BACKEND_CONFIG_CONTAINER_NAME}"
+          terraform apply plan

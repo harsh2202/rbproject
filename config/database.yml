@@ -1,4 +1,11 @@
 development:
   adapter: postgresql
-  database: gifmachine
-  host: localhost
+  database: test_db
+  host: camunda-pgsqlflex-intp.postgres.database.azure.com
+  url: jdbc:postgresql://camunda-pgsqlflex-intp.postgres.database.azure.com:5432/test_db
+  username: dbadmin
+  password: zmnPWPFRnDPYsVnIOs9f
+  pool: 5
+  port: 5432
+
+

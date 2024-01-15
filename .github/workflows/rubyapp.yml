@@ -1,0 +1,38 @@
+name: RUBY_App
+
+on:
+  push:
+    branches:
+      - ci-pipeline
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set Up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.6.5 # Specify your Ruby version
+
+      - name: Install Dependencies
+        run: |
+          gem install bundler -v 2.4.22
+          gem update --system 3.2.3
+          bundle install
+          
+      - name: Login to ACR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ACR_URL_DEV }}
+          username: ${{ secrets.ACR_USER_DEV }}
+          password: ${{ secrets.ACR_SECRET_DEV }}
+#      - name: Run Tests
+#        run: bundle exec rspec
+
+      - name: Docker Build
+        run: |
+          docker build -t rbapp44.azurecr.io/busybox:latest .
+          docker push rbapp44.azurecr.io/busybox:latest 

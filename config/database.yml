@@ -1,10 +1,10 @@
 development:
   adapter: postgresql
-  database: test_db
-  host: camunda-pgsqlflex-intp.postgres.database.azure.com
-  url: jdbc:postgresql://camunda-pgsqlflex-intp.postgres.database.azure.com:5432/test_db
+  database: rb_db
+  host: pgsqlflex-postgres.database.azure.com
+  url: jdbc:postgresql://pgsqlflex-postgres.database.azure.com:5432/rb_db
   username: dbadmin
-  password: zmnPWPFRnDPYsVnIOs9f
+  password: **removing on purpose**
   pool: 5
   port: 5432
 

@@ -14,7 +14,6 @@ on:
   pull_request:
     paths:
       - 'env/tf_ruby/**'
-      - 'env/tf_ruby/**'
 
 jobs:
   ruby-65:
